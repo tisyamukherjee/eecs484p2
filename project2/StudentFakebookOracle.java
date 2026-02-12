@@ -10,8 +10,9 @@ import java.util.ArrayList;
     The StudentFakebookOracle class is derived from the FakebookOracle class and implements
     the abstract query functions that investigate the database provided via the <connection>
     parameter of the constructor to discover specific information.
-*/
+ */
 public final class StudentFakebookOracle extends FakebookOracle {
+
     // [Constructor]
     // REQUIRES: <connection> is a valid JDBC connection
     public StudentFakebookOracle(Connection connection) {
@@ -41,11 +42,15 @@ public final class StudentFakebookOracle extends FakebookOracle {
             // * Find the month in which the most users were born
             // * Find the month in which the fewest (but at least 1) users were born
             ResultSet rst = stmt.executeQuery(
-                    "SELECT COUNT(*) AS Birthed, Month_of_Birth " + // select birth months and number of uses with that birth month
-                            "FROM " + UsersTable + " " + // from all users
-                            "WHERE Month_of_Birth IS NOT NULL " + // for which a birth month is available
-                            "GROUP BY Month_of_Birth " + // group into buckets by birth month
-                            "ORDER BY Birthed DESC, Month_of_Birth ASC"); // sort by users born in that month, descending; break ties by birth month
+                    "SELECT COUNT(*) AS Birthed, Month_of_Birth "
+                    + // select birth months and number of uses with that birth month
+                    "FROM " + UsersTable + " "
+                    + // from all users
+                    "WHERE Month_of_Birth IS NOT NULL "
+                    + // for which a birth month is available
+                    "GROUP BY Month_of_Birth "
+                    + // group into buckets by birth month
+                    "ORDER BY Birthed DESC, Month_of_Birth ASC"); // sort by users born in that month, descending; break ties by birth month
 
             int mostMonth = 0;
             int leastMonth = 0;
@@ -65,10 +70,13 @@ public final class StudentFakebookOracle extends FakebookOracle {
             // ------------
             // * Get the names of users born in the most popular birth month
             rst = stmt.executeQuery(
-                    "SELECT User_ID, First_Name, Last_Name " + // select ID, first name, and last name
-                            "FROM " + UsersTable + " " + // from all users
-                            "WHERE Month_of_Birth = " + mostMonth + " " + // born in the most popular birth month
-                            "ORDER BY User_ID"); // sort smaller IDs first
+                    "SELECT User_ID, First_Name, Last_Name "
+                    + // select ID, first name, and last name
+                    "FROM " + UsersTable + " "
+                    + // from all users
+                    "WHERE Month_of_Birth = " + mostMonth + " "
+                    + // born in the most popular birth month
+                    "ORDER BY User_ID"); // sort smaller IDs first
 
             while (rst.next()) {
                 info.addMostPopularBirthMonthUser(new UserInfo(rst.getLong(1), rst.getString(2), rst.getString(3)));
@@ -78,10 +86,13 @@ public final class StudentFakebookOracle extends FakebookOracle {
             // ------------
             // * Get the names of users born in the least popular birth month
             rst = stmt.executeQuery(
-                    "SELECT User_ID, First_Name, Last_Name " + // select ID, first name, and last name
-                            "FROM " + UsersTable + " " + // from all users
-                            "WHERE Month_of_Birth = " + leastMonth + " " + // born in the least popular birth month
-                            "ORDER BY User_ID"); // sort smaller IDs first
+                    "SELECT User_ID, First_Name, Last_Name "
+                    + // select ID, first name, and last name
+                    "FROM " + UsersTable + " "
+                    + // from all users
+                    "WHERE Month_of_Birth = " + leastMonth + " "
+                    + // born in the least popular birth month
+                    "ORDER BY User_ID"); // sort smaller IDs first
 
             while (rst.next()) {
                 info.addLeastPopularBirthMonthUser(new UserInfo(rst.getLong(1), rst.getString(2), rst.getString(3)));
@@ -124,7 +135,58 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 info.addCommonName("Jessica");
                 info.setCommonNameCount(42);
                 return info;
-            */
+             */
+            ResultSet rst = stmt.executeQuery(
+                    "SELECT 'Min_Name' AS Type, u.First_Name as Name "
+                    + "FROM " + UsersTable + " u "
+                    + "WHERE LENGTH(u.First_Name) = ("
+                    + "SELECT MIN(LENGTH(First_Name)) "
+                    + "FROM " + UsersTable
+                    + ") "
+                    + "UNION "
+                    + "SELECT 'Max_Name' AS Type, u2.First_Name as Name "
+                    + "FROM " + UsersTable + " u2 "
+                    + "WHERE (LENGTH(u2.First_Name)) = ( "
+                    + "SELECT MAX(LENGTH(First_Name)) "
+                    + "FROM " + UsersTable
+                    + ") "
+                    + "UNION "
+                    + "SELECT 'Common_Name' AS Type, u3.First_Name as Name "
+                    + "FROM " + UsersTable + " u3 "
+                    + "GROUP BY u3.First_Name "
+                    + "HAVING COUNT(*) = ( "
+                    + "SELECT MAX(name_count) "
+                    + "FROM ("
+                    + "SELECT COUNT(*) AS name_count "
+                    + "FROM " + UsersTable + " u4 "
+                    + "GROUP BY u4.First_Name "
+                    + ") inner_query "
+                    + ") "
+                    + "ORDER BY Name"
+            );
+            // System.out.println(rst);
+            string[] longNames = [];
+            string[] shortNames = [];
+            arr[] commonNames = [];
+
+            while (rst.next()) {
+                string colName = getString(0)
+                if (colName == "Min_Name") {
+                    string name = getString(1);
+                    shortNames.append(name);
+                } else if (colName == "Max_Name") {
+                    string name = getString(1);
+                    longNames.append(name);
+                } else {
+                    string name = getString(1);
+                    int count = getString(2);
+                    commonNames.append([name, count
+            
+            
+                ]);
+                }
+            }
+
             return new FirstNameInfo(); // placeholder for compilation
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -151,7 +213,7 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 UserInfo u2 = new UserInfo(39, "Margaret", "Thatcher");
                 results.add(u1);
                 results.add(u2);
-            */
+             */
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
@@ -176,7 +238,7 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 UserInfo u2 = new UserInfo(104, "Tom", "Hanks");
                 results.add(u1);
                 results.add(u2);
-            */
+             */
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
@@ -208,7 +270,7 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 tp.addTaggedUser(u2);
                 tp.addTaggedUser(u3);
                 results.add(tp);
-            */
+             */
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
@@ -242,7 +304,7 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 PhotoInfo p = new PhotoInfo(167, 309, "www.photolink.net", "Tragedy");
                 mp.addSharedPhoto(p);
                 results.add(mp);
-            */
+             */
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
@@ -272,7 +334,7 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 UsersPair up = new UsersPair(u1, u2);
                 up.addSharedFriend(u3);
                 results.add(up);
-            */
+             */
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
@@ -296,7 +358,7 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 info.addState("Hawaii");
                 info.addState("New Hampshire");
                 return info;
-            */
+             */
             return new EventStateInfo(-1); // placeholder for compilation
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -320,7 +382,7 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 UserInfo old = new UserInfo(12000000, "Galileo", "Galilei");
                 UserInfo young = new UserInfo(80000000, "Neil", "deGrasse Tyson");
                 return new AgeInfo(old, young);
-            */
+             */
             return new AgeInfo(new UserInfo(-1, "UNWRITTEN", "UNWRITTEN"), new UserInfo(-1, "UNWRITTEN", "UNWRITTEN")); // placeholder for compilation
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -348,7 +410,7 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 UserInfo u2 = new UserInfo(17231, "Kourtney", "Kardashian");
                 SiblingInfo si = new SiblingInfo(u1, u2);
                 results.add(si);
-            */
+             */
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }

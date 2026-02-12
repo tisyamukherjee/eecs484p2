@@ -8,8 +8,8 @@ import java.sql.SQLException;
 
 public final class FakebookOracleMain {
     // Member Variables
-    private static String username = "uniqname"; // replace with your uniqname
-    private static String password = "eecsclass"; // replace with your Oracle password (default: eecsclass)
+    private static String username = "tisyam"; // replace with your uniqname
+    private static String password = "rockyrupapradip"; // replace with your Oracle password (default: eecsclass)
 
     // [Main Function]
     // Expected Command Line Arguments:

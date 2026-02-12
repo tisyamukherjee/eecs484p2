@@ -9,8 +9,29 @@
 -- Hint: You may consider using the LENGTH() operation in SQL. Remember that you are 
 -- allowed to execute multiple SQL statements in one query.
 
-
-SELECT MIN(LENGTH(u.First_Name)), MAX(LENGTH(u.First_Name))
+SELECT 'Min_Name' AS Type, u.First_Name as Name
 FROM project2.Public_Users u 
-GROUP BY u.First_Name
-ORDER BY u.First_Name;
+WHERE LENGTH(u.First_Name) = (
+    SELECT MIN(LENGTH(First_Name))
+    FROM project2.Public_Users
+)
+UNION  
+SELECT 'Max_Name' AS Type, u2.First_Name as Name
+FROM project2.Public_Users u2
+WHERE (LENGTH(u2.First_Name)) = (
+    SELECT MAX(LENGTH(First_Name))
+    FROM project2.Public_Users
+)
+UNION
+SELECT 'Common_Name' AS Type, u3.First_Name as Name
+FROM project2.Public_Users u3
+GROUP BY u3.First_Name
+HAVING COUNT(*) = (
+    SELECT MAX(name_count)
+    FROM (
+        SELECT COUNT(*) AS name_count
+        FROM project2.Public_Users u4
+        GROUP BY u4.First_Name
+    )
+)
+ORDER BY Name;
