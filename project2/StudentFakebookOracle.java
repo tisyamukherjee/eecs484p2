@@ -137,21 +137,21 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 return info;
              */
             ResultSet rst = stmt.executeQuery(
-                    "SELECT 'Min_Name' AS Type, u.First_Name as Name "
+                    "SELECT 'Min_Name' AS Type, u.First_Name as Name, null "
                     + "FROM " + UsersTable + " u "
                     + "WHERE LENGTH(u.First_Name) = ("
                     + "SELECT MIN(LENGTH(First_Name)) "
                     + "FROM " + UsersTable
                     + ") "
                     + "UNION "
-                    + "SELECT 'Max_Name' AS Type, u2.First_Name as Name "
+                    + "SELECT 'Max_Name' AS Type, u2.First_Name as Name, null "
                     + "FROM " + UsersTable + " u2 "
                     + "WHERE (LENGTH(u2.First_Name)) = ( "
                     + "SELECT MAX(LENGTH(First_Name)) "
                     + "FROM " + UsersTable
                     + ") "
                     + "UNION "
-                    + "SELECT 'Common_Name' AS Type, u3.First_Name as Name "
+                    + "SELECT 'Common_Name' AS Type, u3.First_Name as Name, COUNT(u3.First_Name) as Count "
                     + "FROM " + UsersTable + " u3 "
                     + "GROUP BY u3.First_Name "
                     + "HAVING COUNT(*) = ( "
@@ -164,30 +164,39 @@ public final class StudentFakebookOracle extends FakebookOracle {
                     + ") "
                     + "ORDER BY Name"
             );
-            // System.out.println(rst);
-            string[] longNames = [];
-            string[] shortNames = [];
-            arr[] commonNames = [];
+ 
+            ArrayList<String> longNames = new ArrayList<>();
+            ArrayList<String> shortNames = new ArrayList<>();
+            ArrayList<String[]> commonNames = new ArrayList<>();
 
             while (rst.next()) {
-                string colName = getString(0)
-                if (colName == "Min_Name") {
-                    string name = getString(1);
-                    shortNames.append(name);
-                } else if (colName == "Max_Name") {
-                    string name = getString(1);
-                    longNames.append(name);
-                } else {
-                    string name = getString(1);
-                    int count = getString(2);
-                    commonNames.append([name, count
-            
-            
-                ]);
+                String colName = rst.getString(1);  
+                String name = rst.getString(2);   
+                if (colName.equals("Min_Name")) {
+                    shortNames.add(name);
+                } else if (colName.equals("Max_Name")) {
+                    longNames.add(name);
+                } else { 
+                    int count = rst.getInt(3);
+                    String string_count = Integer.toString(count);
+                    commonNames.add(new String[]{name, string_count});
                 }
             }
-
-            return new FirstNameInfo(); // placeholder for compilation
+            FirstNameInfo info = new FirstNameInfo();
+            for (String name : longNames) {
+                info.addLongName(name);
+            }
+            for (String name : shortNames) {
+                info.addShortName(name);
+            }
+            for (int i = 0; i < commonNames.size(); ++i) {
+                if (i == 0) {
+                    int count = Integer.parseInt(commonNames.get(0)[1]);
+                    info.setCommonNameCount(count); 
+                }
+                info.addCommonName(commonNames.get(i)[0]);
+            }
+            return info; // placeholder for compilation
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             return new FirstNameInfo();

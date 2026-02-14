@@ -9,21 +9,21 @@
 -- Hint: You may consider using the LENGTH() operation in SQL. Remember that you are 
 -- allowed to execute multiple SQL statements in one query.
 
-SELECT 'Min_Name' AS Type, u.First_Name as Name
+SELECT 'Min_Name' AS Type, u.First_Name as Name, null
 FROM project2.Public_Users u 
 WHERE LENGTH(u.First_Name) = (
     SELECT MIN(LENGTH(First_Name))
     FROM project2.Public_Users
 )
 UNION  
-SELECT 'Max_Name' AS Type, u2.First_Name as Name
+SELECT 'Max_Name' AS Type, u2.First_Name as Name, null
 FROM project2.Public_Users u2
 WHERE (LENGTH(u2.First_Name)) = (
     SELECT MAX(LENGTH(First_Name))
     FROM project2.Public_Users
 )
 UNION
-SELECT 'Common_Name' AS Type, u3.First_Name as Name
+SELECT 'Common_Name' AS Type, u3.First_Name as Name, COUNT(u3.First_Name) as Count
 FROM project2.Public_Users u3
 GROUP BY u3.First_Name
 HAVING COUNT(*) = (
