@@ -1,0 +1,13 @@
+
+SQL*Plus: Release 23.26.0.0.0 - Production on Fri Feb 13 21:07:05 2026
+Version 23.26.0.0.0
+
+Copyright (c) 1982, 2025, Oracle.  All rights reserved.
+
+ERROR:
+ORA-12154: Cannot connect to database. Cannot find alias project2 in
+/usr/caen/oracle/local/tnsnames.ora.
+Help: https://docs.oracle.com/error-help/db/ora-12154/
+
+
+Enter user-name: 

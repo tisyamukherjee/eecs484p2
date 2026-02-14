@@ -223,6 +223,24 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 results.add(u1);
                 results.add(u2);
              */
+            ResultSet rst = stmt.executeQuery(
+                "SELECT u.user_id, u.First_name, u.Last_Name " +
+                "FROM " + UsersTable + " u " +
+                " WHERE NOT EXISTS (" +
+                    "SELECT 1 " +
+                    "FROM " + FriendsTable + " f " +
+                    " WHERE f.user1_id = u.user_id OR f.user2_id = u.user_id " +
+                ") " + 
+                " ORDER BY u.user_id ASC"
+            );
+
+            while (rst.next()) {
+                String first = rst.getString(2);
+                String last = rst.getString(3);
+                int id = rst.getInt(1); 
+                UserInfo u = new UserInfo(id, first, last);
+                results.add(u);
+            }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
@@ -248,6 +266,26 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 results.add(u1);
                 results.add(u2);
              */
+            ResultSet rst = stmt.executeQuery(
+                "SELECT u.user_id, u.First_name, u.Last_Name " +
+                "FROM " + UsersTable + " u " +
+                "LEFT JOIN " + HometownCitiesTable + " h ON h.user_id = u.user_id " +
+                "LEFT JOIN " + CurrentCitiesTable + " c ON c.user_id = u.user_id " + 
+                "WHERE EXISTS ( " +
+                    "SELECT 1 " + 
+                    "FROM " + UsersTable + " u " + 
+                    "WHERE c.current_city_id <> h.hometown_city_id " +
+                ") " +
+                "ORDER BY u.user_ID ASC"
+            );
+
+            while (rst.next()) {
+                String first = rst.getString(2);
+                String last = rst.getString(3);
+                int id = rst.getInt(1); 
+                UserInfo u = new UserInfo(id, first, last);
+                results.add(u);
+            }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
