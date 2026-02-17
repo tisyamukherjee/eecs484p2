@@ -468,7 +468,32 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 info.addState("New Hampshire");
                 return info;
              */
-            return new EventStateInfo(-1); // placeholder for compilation
+            ResultSet rst = stmt.executeQuery(
+                "SELECT c.state_name, COUNT(*) AS num_events " +
+                "FROM " + EventsTable + " e " + 
+                "JOIN " + CitiesTable + " c ON e.event_city_id = c.city_id " + 
+                "GROUP BY c.state_name " + 
+                "HAVING COUNT(*) = ( " + 
+                    "SELECT MAX(event_count) " + 
+                    "FROM ( " + 
+                        "SELECT COUNT(*) AS event_count " +
+                        "FROM " + EventsTable + " e2 " + 
+                        "JOIN " + CitiesTable + " c2 ON e2.event_city_id = c2.city_id " + 
+                        "GROUP BY c2.state_name" +
+                    ")" + 
+                ") " +
+                "ORDER BY c.state_name ASC "
+            );
+            ArrayList<String> State = new ArrayList<>();
+            EventStateInfo info = new EventStateInfo(50);
+            
+            while (rst.next()) {
+                String state = rst.getString(1);
+                int event_count = rst.getInt(2);
+                info = new EventStateInfo(event_count);
+                info.addState(state);
+            }
+            return info; // placeholder for compilation
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             return new EventStateInfo(-1);
