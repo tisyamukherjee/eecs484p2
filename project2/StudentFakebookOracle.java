@@ -318,6 +318,43 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 tp.addTaggedUser(u3);
                 results.add(tp);
              */
+            ResultSet rst = stmt.executeQuery(
+                "SELECT p2.photo_id, p2.album_id, p2.photo_link, a.album_name, u.user_id, u.first_name, u.last_name " +
+                "FROM ( " + 
+                    "SELECT p.photo_id " +
+                    "FROM " + PhotosTable + " p " +  
+                    "JOIN " + TagsTable + " t on p.photo_id = t.tag_photo_id " + 
+                    "GROUP BY p.photo_id " + 
+                    "ORDER BY COUNT(*) DESC, p.photo_id ASC " + 
+                    "FETCH FIRST " + num + " ROWS ONLY " + 
+                ") tagged_photos " + 
+                "JOIN " + PhotosTable + " p2 on tagged_photos.photo_id = p2.photo_id " + 
+                "JOIN " + AlbumsTable + " a ON a.album_id = p2.album_id " + 
+                "JOIN " + TagsTable + " t2 ON t2.tag_photo_id = p2.photo_id " +
+                "JOIN " + UsersTable + " u ON t2.tag_subject_id = u.user_id " +
+                "ORDER BY p2.photo_id ASC, u.user_id ASC"
+            );
+            TaggedPhotoInfo tp = null;
+            int current_id = -1;
+            while(rst.next()) {
+                int photo_id = rst.getInt(1);
+                int album_id = rst.getInt(2);
+                String link = rst.getString(3);
+                String album_name = rst.getString(4);
+                int user_id = rst.getInt(5);
+                String first = rst.getString(6);
+                String last = rst.getString(7);
+
+                if (photo_id != current_id) {
+                    PhotoInfo p = new PhotoInfo(photo_id, album_id, link, album_name);
+                    tp = new TaggedPhotoInfo(p);
+                    results.add(tp);
+                    current_id = photo_id;
+                }
+                UserInfo u = new UserInfo(user_id, first, last);
+                tp.addTaggedUser(u);
+
+            }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }

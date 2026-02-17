@@ -10,6 +10,23 @@
 -- photo, you should list the ID, first name, and last name of the users tagged in that photo. 
 -- Tagged users should be listed in ascending order by ID.
 
+
+SELECT p2.photo_id, p2.album_id, p2.photo_link, a.album_name, u.user_id, u.first_name, u.last_name
+FROM (
+    SELECT p.photo_id
+    FROM project2.Public_Photos p 
+    JOIN project2.Public_Tags t on p.photo_id = t.tag_photo_id
+    GROUP BY p.photo_id
+    ORDER BY COUNT(*) DESC, p.photo_id ASC
+    FETCH FIRST 1 ROWS ONLY
+) tagged_photos
+JOIN project2.Public_Photos p2 on tagged_photos.photo_id = p2.photo_id
+JOIN project2.Public_Albums a ON a.album_id = p2.album_id
+JOIN project2.Public_Tags t2 ON t2.tag_photo_id = p2.photo_id
+JOIN project2.Public_Users u ON t2.tag_subject_id = u.user_id
+ORDER BY p2.photo_id ASC, u.user_id ASC;
+
+
 -- SELECT p.photo_id, p.album_id, p.photo_link, a.album_name
 -- FROM project2.Public_Photos p 
 -- JOIN project2.Public_Albums a ON a.album_id = p.album_id
@@ -20,18 +37,3 @@
 -- )
 -- GROUP BY p.photo_id
 -- ORDER BY COUNT(p.photo_id) DESC;
-
-
-SELECT p2.photo_id, p2.album_id, p2.photo_link, a.album_name, u.user_id, u.first_name, u.last_name
-FROM (
-    SELECT p.photo_id
-    FROM project2.Public_Photos p 
-    JOIN project2.Public_Tags t on p.photo_id = t.tag_photo_id
-    GROUP BY p.photo_id
-    ORDER BY COUNT(*) DESC
-) tagged_photos
-JOIN project2.Public_Photos p2 on tagged_photos.photo_id = p2.photo_id
-JOIN project2.Public_Albums a ON a.album_id = p2.album_id
-JOIN project2.Public_Tags t2 ON t2.tag_photo_id = p2.photo_id
-JOIN project2.Public_Users u ON t2.tag_subject_id = u.user_id
-FETCH FIRST 5 ROWS ONLY; 
