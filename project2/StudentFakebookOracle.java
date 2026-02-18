@@ -389,26 +389,32 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 mp.addSharedPhoto(p);
                 results.add(mp);
              */
+  
             ResultSet rst = stmt.executeQuery(
-                "SELECT u1.user_id, u1.First_Name, u1.Last_Name, u1.year_of_birth, u2.user_id, u2.First_Name, u2.Last_Name, u2.year_of_birth, p.photo_id, p.photo_link, a.album_id, a.album_name " +
+                "SELECT u1.user_id, u1.First_Name, u1.Last_Name, u1.year_of_birth, u2.user_id, u2.First_Name, u2.Last_Name, u2.year_of_birth " +
                 "FROM " + UsersTable + " u1 " +
                 "JOIN " + UsersTable + " u2 ON u1.user_id < u2.user_id " + 
                 "JOIN " + TagsTable + " t1 ON t1.tag_subject_id = u1.user_id " + 
-                "JOIN " + TagsTable + " t2 ON t2.tag_subject_id = u2.user_id " +
-                "JOIN " + PhotosTable + " p ON p.photo_id = t1.tag_photo_id AND p.photo_id = t2.tag_photo_id " +
-                "JOIN " + AlbumsTable + " a ON a.album_id = p.album_id " + 
+                "JOIN " + TagsTable + " t2 ON t2.tag_subject_id = u2.user_id AND t2.tag_photo_id = t1.tag_photo_id " +
                 "WHERE u1.gender = u2.gender " + 
                 "AND NOT EXISTS (" +
                     "SELECT 1 " + 
                     "FROM " + FriendsTable + " f " +
                     "WHERE (f.user1_id = u1.user_id AND f.user2_id = u2.user_id) OR (f.user1_id = u2.user_id AND f.user2_id = u1.user_id) " +
                 ")" +  
-                "AND (ABS(u1.year_of_birth - u2.year_of_birth) <= " + yearDiff + ")" +  
-                "ORDER BY u1.user_id ASC, u2.user_id ASC, p.photo_id ASC " +
+                "AND (ABS(u1.year_of_birth - u2.year_of_birth) <= " + yearDiff + ") " +  
+                "GROUP BY u1.user_id, u1.First_Name, u1.Last_Name, u1.year_of_birth, u2.user_id, u2.First_Name, u2.Last_Name, u2.year_of_birth " +
+                "ORDER BY u1.user_id ASC, u2.user_id ASC " +
                 "FETCH FIRST " + num + " ROWS ONLY "
             );
+
+            // group by the users
+            // count the amount
+            // records for common photoo
             long prevU1Id = -1;
-            long prevU2Id = -2;
+            long prevU2Id = -1;
+            MatchPair mp = null;
+            Statement stmt2 = oracle.createStatement();
             while(rst.next()) {
                 int u1_id = rst.getInt(1);
                 String u1_first = rst.getString(2);
@@ -418,29 +424,32 @@ public final class StudentFakebookOracle extends FakebookOracle {
                 String u2_first = rst.getString(6);
                 String u2_last = rst.getString(7);
                 int u2_birth = rst.getInt(8);
-                int photo_id = rst.getInt(9);
-                String link = rst.getString(10);
-                int album_id = rst.getInt(11);
-                String album_name = rst.getString(12);
-
-                MatchPair mp = null;
-
-                if(!results.isEmpty() && prevU1Id == u1_id && prevU2Id == u2_id) {
-                    mp = results.get(results.size() - 1);
-                    prevU1Id = u1_id;
-                    prevU2Id = u2_id;
-                    break;
-                }
-
-                if (mp == null) {
-                    UserInfo u1 = new UserInfo(u1_id, u1_first, u1_last);
-                    UserInfo u2 = new UserInfo(u2_id, u2_first, u2_last);
-                    mp = new MatchPair(u1, u1_birth, u2, u2_birth);
-                    results.add(mp);
-                }
-                PhotoInfo p = new PhotoInfo(photo_id, album_id, link, album_name);
-                mp.addSharedPhoto(p);
                 
+                UserInfo u1 = new UserInfo(u1_id, u1_first, u1_last);
+                UserInfo u2 = new UserInfo(u2_id, u2_first, u2_last);
+                mp = new MatchPair(u1, u1_birth, u2, u2_birth);
+          // p.photo_id, p.photo_link, a.album_id, a.album_name
+            // "JOIN " + PhotosTable + " p ON p.photo_id = t1.tag_photo_id AND p.photo_id = t2.tag_photo_id " +
+            // "JOIN " + AlbumsTable + " a ON a.album_id = p.album_id " + 
+                ResultSet rst2 = stmt2.executeQuery(
+                    "SELECT p.photo_id, p.photo_link, a.album_id, a.album_name " +
+                    "FROM " + TagsTable + " t1 " +
+                    "JOIN " + TagsTable + " t2 ON t1.tag_photo_id = t2.tag_photo_id " +
+                    "JOIN " + PhotosTable + " p ON p.photo_id = t1.tag_photo_id AND p.photo_id = t2.tag_photo_id " + 
+                    "JOIN " + AlbumsTable + " a ON a.album_id = p.album_id " +
+                    "WHERE t1.tag_subject_id = " + u1_id + " AND t2.tag_subject_id = " + u2_id
+                    // basically finding all photos they match in
+                );
+                while(rst2.next()) {
+                    int photo_id = rst2.getInt(1);
+                    String link = rst2.getString(2);
+                    int album_id = rst2.getInt(3);
+                    String album_name = rst2.getString(4);
+                    PhotoInfo p = new PhotoInfo(photo_id, album_id, link, album_name);
+                    mp.addSharedPhoto(p);
+                }
+                results.add(mp);
+               
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());

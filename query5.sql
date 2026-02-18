@@ -32,3 +32,11 @@ AND NOT EXISTS (  -- making sure users are not friends
 ) 
 AND (ABS(u1.year_of_birth - u2.year_of_birth) <= 1)
 ORDER BY u1.user_id ASC, u2.user_id ASC, p.photo_id ASC;
+
+
+SELECT p.photo_id, p.photo_link, a.album_id, a.album_name
+FROM project2.Public_Tags t1
+JOIN project2.Public_Tags t2 ON t2.photo_id = t1.photo_id
+JOIN project2.Public_Photos p ON p.photo_id = t1.tag_photo_id
+JOIN project2.Public_Albums a ON a.album_id = p.album_id
+WHERE u1.user_id = ? AND u2.user_id = ?
